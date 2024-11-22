@@ -1,46 +1,46 @@
 services:
     # number 1,  uses a prebuilt image, see the file /docker/README.md
-    php-fpm:
-        image: ${COMPOSE_PROJECT_NAME}-php-fpm:latest
-        container_name: ${COMPOSE_PROJECT_NAME}-php-fpm
-        volumes:
-               #prod volume example, Save logs in volumes.
-          - ../storage/logs:${WORK_DIR}/storage/logs:rw
-        restart: on-failure
-        depends_on:
-            - postgres
-        networks:
-            - docker_base
-
-    # number 2, local development
 #    php-fpm:
+#        image: ${COMPOSE_PROJECT_NAME}-php-fpm:latest
 #        container_name: ${COMPOSE_PROJECT_NAME}-php-fpm
-#        build:
-#          context: ../
-#          dockerfile: .${DOCKER_DIR}/php-fpm/Dockerfile
-#          args:
-#            PUID: ${PUID}
-#            PGID: ${PGID}
-#            DOCKER_DIR: ${DOCKER_DIR}
-#            WORK_DIR: ${WORK_DIR}
-#            USER_GROUP: ${USER_GROUP}
-#            INSTALL_XDEBUG: ${INSTALL_XDEBUG}
-#            TZ: ${TZ}
-#            PHP_FPM_PORT: ${PHP_FPM_PORT}
-#        restart: on-failure
 #        volumes:
-#         - ../:${WORK_DIR}:rw
-#        configs:
-#          - source: php-fpm-custom-ini
-#            target: /usr/local/etc/php/conf.d/custom.ini
-#          - source: php-fpm-xdebug-ini
-#            target: /usr/local/etc/php/conf.d/xdebug.ini
-#          - source: php-fpm-www-ini
-#            target: /usr/local/etc/php-fpm.d/www.conf
+#               #prod volume example, Save logs in volumes.
+#          - ../storage/logs:${WORK_DIR}/storage/logs:rw
+#        restart: on-failure
 #        depends_on:
 #            - postgres
 #        networks:
-#          - docker_base
+#            - docker_base
+
+    # number 2, local development
+    php-fpm:
+        container_name: ${COMPOSE_PROJECT_NAME}-php-fpm
+        build:
+          context: ../
+          dockerfile: .${DOCKER_DIR}/php-fpm/Dockerfile
+          args:
+            PUID: ${PUID}
+            PGID: ${PGID}
+            DOCKER_DIR: ${DOCKER_DIR}
+            WORK_DIR: ${WORK_DIR}
+            USER_GROUP: ${USER_GROUP}
+            INSTALL_XDEBUG: ${INSTALL_XDEBUG}
+            TZ: ${TZ}
+            PHP_FPM_PORT: ${PHP_FPM_PORT}
+        restart: on-failure
+        volumes:
+         - ../:${WORK_DIR}:rw
+        configs:
+          - source: php-fpm-custom-ini
+            target: /usr/local/etc/php/conf.d/custom.ini
+          - source: php-fpm-xdebug-ini
+            target: /usr/local/etc/php/conf.d/xdebug.ini
+          - source: php-fpm-www-ini
+            target: /usr/local/etc/php-fpm.d/www.conf
+        depends_on:
+            - postgres
+        networks:
+          - docker_base
 
     postgres:
         container_name: ${COMPOSE_PROJECT_NAME}-postgres
