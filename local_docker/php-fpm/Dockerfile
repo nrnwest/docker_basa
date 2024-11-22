@@ -22,8 +22,7 @@ RUN if getent passwd $USER_GROUP; then userdel $USER_GROUP; fi && \
 # Copy all files and assign them to the owner and their group.
 COPY --chown=$USER_GROUP:$USER_GROUP . $WORK_DIR
 
-# Installation system with 3 layers
-# 1. Installing system libraries
+# Installing system libraries
 RUN apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y \
@@ -36,7 +35,7 @@ RUN apt-get update -y && \
         curl \
         postgresql-client
 
-# 2. Installing PHP extensions
+# Installing PHP extensions
 RUN docker-php-ext-install \
         pdo_pgsql \
         bcmath \
@@ -45,21 +44,21 @@ RUN docker-php-ext-install \
     pecl install redis && \
     docker-php-ext-enable redis
 
-# 3. Clearing the apt cache
-RUN rm -rf /var/lib/apt/lists/*
-
-# End of system installation
-
 # Installing xDebug
 RUN if [ "$INSTALL_XDEBUG" = 1 ]; then \
         pecl install xdebug && docker-php-ext-enable xdebug; \
     fi
+
+# Clearing the apt cache
+RUN rm -rf /var/lib/apt/lists/*
+
 
 # Setting the time zone
 ENV TZ=$TZ
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo "$TZ" > /etc/timezone
 
+# copy configs
 COPY .$DOCKER_DIR/php-fpm/config/custom.ini $PHP_INI_DIR/conf.d/custom.ini
 COPY .$DOCKER_DIR/php-fpm/config/xdebug.ini $PHP_INI_DIR/conf.d/xdebug.ini
 COPY .$DOCKER_DIR/php-fpm/config/www.conf /usr/local/etc/php-fpm.d/www.conf
@@ -68,13 +67,6 @@ COPY .$DOCKER_DIR/php-fpm/config/www.conf /usr/local/etc/php-fpm.d/www.conf
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV COMPOSER_MEMORY_LIMIT=-1
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
-
-# Check for the presence of composer.json and execute commands; if the file is missing, simply skip.
-RUN if [ -f "composer.json" ]; then \
-        composer install --optimize-autoloader; \
-    else \
-        echo "No composer.json found, skipping installation."; \
-    fi
 
 USER $USER_GROUP
 

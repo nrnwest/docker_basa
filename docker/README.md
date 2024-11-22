@@ -1,20 +1,33 @@
-In this directory, the php_fpm image is provided, which can be used in both local and remote registries.
-To build the image for the local registry, use the Makefile. Make sure make is installed on your system.
+В данной директории мы будем собирать контейнер который будет применяться:
 
-To build the image:
-`cd docker`
-`make create_image_php-fpm`
+dev, stage, prod 
 
-Other commands are described in the Makefile itself.
-The Makefile is created for testing in a local environment.
+## Локальное тестирование
+1. Cобираем контейнер с текущей директории запускаем
+`make build-php-fpm`
+2. Редактируем файл local_docker/docker-compose.yml
+   В нем коментируем лакальную секцию php-fmp 2 а первую роскоментируем
+   И можем запускать make build 
 
-The files in the php-fpm/ directory can be used for dev, stage, and prod environments after full testing on the dev server.
+Данный контейнер отличаеться главное тем что локальная структура в него полностью копируеться и не подключаеться
+как  volumes.
+Он предназначе для запуска как pod в кубернетесе, или так как мы его используем локально, получая его 
+через локальный реестр - имитируя работу кубера. 
+В нем нужно запускать композер и все остальное, по идеи он должен стоиться как с когда который доступен только в гит.
 
-The php-fpm/config/ directory contains PHP configuration files, which need to be adjusted to fit the needs of your project.
+В его докер файле есть переменая ARG ENV_FILE=/.env.example 
+она содержит файл .env.exmaple котоырй будет скопирован в .env
+Это копирование должна быть выполненна перед началом сборки в CI/CD
+3. /.env.example должен быть создан с сикретов гит.
+4. скоприрован файл в .env
+5. после сборки контейнера файлы .env* должны быть удалены с git
 
-Don't forget to set or pass the correct local user data when building the image. On most host machines, 
-the values are typically `1000`:
 
+## Ошибки з доступом
+иногда на гит серваках могут быть проблемы с доступом, нам нужно зайти в собраный образ
+и помостреть соствеников созданых директорий в образе, если хоть одна директория 
+которая вызывает ошибку  имеет PUID PGID отличительный от указано в переменых контейнера их 
+нужно исправть на текущие как пример:
 `
 ARG PUID=101
 ARG PGID=102
