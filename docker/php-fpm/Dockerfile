@@ -56,7 +56,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo "$TZ" > /etc/timezone
 
 # copy configs
-COPY  $ENV_FILE .env
+COPY  --chown=$USER_GROUP:$USER_GROUP $ENV_FILE .env
 COPY .$DOCKER_DIR/php-fpm/config/custom.ini $PHP_INI_DIR/conf.d/custom.ini
 COPY .$DOCKER_DIR/php-fpm/config/www.conf /usr/local/etc/php-fpm.d/www.conf
 
