@@ -1,0 +1,102 @@
+services:
+    # number 1,  uses a prebuilt image, see the file /docker/README.md
+#    php-fpm:
+#        image: geobuyer_api-php-fpm:latest
+#        container_name: ${COMPOSE_PROJECT_NAME}-php-fpm
+#        volumes:
+#            - ../storage:/var/www/storage
+#        restart: on-failure
+#        depends_on:
+#            - postgres
+#        networks:
+#            - geobuyer
+
+    # number 2, local development
+    php-fpm:
+        container_name: ${COMPOSE_PROJECT_NAME}-php-fpm
+        build:
+          context: ../
+          dockerfile: .${DOCKER_DIR}/php-fpm/Dockerfile
+          args:
+            PUID: ${PUID}
+            PGID: ${PGID}
+            DOCKER_DIR: ${DOCKER_DIR}
+            WORK_DIR: ${WORK_DIR}
+            USER_GROUP: ${USER_GROUP}
+            INSTALL_XDEBUG: ${INSTALL_XDEBUG}
+            TZ: ${TZ}
+            PHP_FPM_PORT: ${PHP_FPM_PORT}
+        restart: on-failure
+#        volumes:
+#          - ../:/var/www:rw
+        configs:
+          - source: php-fpm-custom-ini
+            target: /usr/local/etc/php/conf.d/custom.ini
+          - source: php-fpm-xdebug-ini
+            target: /usr/local/etc/php/conf.d/xdebug.ini
+          - source: php-fpm-www-ini
+            target: /usr/local/etc/php-fpm.d/www.conf
+#        depends_on:
+#            - postgres
+        networks:
+          - docker_basa
+
+#    postgres:
+#        container_name: ${COMPOSE_PROJECT_NAME}-postgres
+#        build:
+#            context: ../
+#            dockerfile: .${DOCKER_DIR}/postgres/Dockerfile
+#        ports:
+#            - ${POSTGRES_PORT}:5432
+#        environment:
+#            POSTGRES_DB: ${POSTGRES_DB}
+#            POSTGRES_USER: ${POSTGRES_USER}
+#            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#        volumes:
+#            - ./../../data_volume/geobuyer_api:/var/lib/postgresql/data:rw
+#        networks:
+#            - docker_basa
+#
+#    nginx:
+#        container_name: ${COMPOSE_PROJECT_NAME}-nginx
+#        build:
+#          context: ../
+#          dockerfile: .${DOCKER_DIR}/nginx/Dockerfile
+#          args:
+#              COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}
+#              PHP_FPM_PORT: ${PHP_FPM_PORT}
+#              DOCKER_DIR: ${DOCKER_DIR}
+#              WORK_DIR: ${WORK_DIR}
+#        ports:
+#          - ${NGINX_PORT}:80
+#        volumes:
+#          - ../public:${WORK_DIR}/public:ro
+#        depends_on:
+#          - php-fpm
+#        networks:
+#          - docker_basa
+#
+#    redis:
+#        container_name: ${COMPOSE_PROJECT_NAME}-redis
+#        image: redis:latest
+#        ports:
+#            - "6379:6379"
+#        volumes:
+#            - redis-data:/data
+#        networks:
+#            - docker_basa
+#
+#volumes:
+#    redis-data:
+
+networks:
+  docker_basa:
+        driver: bridge
+
+configs:
+    php-fpm-custom-ini:
+        file: ..${DOCKER_DIR}/php-fpm/config/custom.ini
+    php-fpm-xdebug-ini:
+        file: ..${DOCKER_DIR}/php-fpm/config/xdebug.ini
+    php-fpm-www-ini:
+        file: ..${DOCKER_DIR}/php-fpm/config/www.conf
